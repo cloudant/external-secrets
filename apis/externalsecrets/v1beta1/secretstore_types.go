@@ -105,6 +105,10 @@ type SecretStoreProvider struct {
 	// Senhasegura configures this store to sync secrets using senhasegura provider
 	// +optional
 	Senhasegura *SenhaseguraProvider `json:"senhasegura,omitempty"`
+
+	// Chef configures this store to sync secrets with chef server
+	// +optional
+	Chef *ChefProvider `json:"chef,omitempty"`
 }
 
 type CAProviderType string

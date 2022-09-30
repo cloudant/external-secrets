@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	esmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
@@ -32,9 +32,9 @@ type ChefAuthSecretRef struct {
 // ChefProvider configures a store to sync secrets using basic chef server connection credentials
 type ChefProvider struct {
 	// Auth defines the information necessary to authenticate against chef Server
-	Auth ChefAuth `json:"auth"`
+	Auth *ChefAuth `json:"auth"`
 	// Name should be the user ID on the chef server
 	Name string `json:"name"`
 	// BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
-	BaseURL *string `json:"baseUrl"`
+	BaseURL string `json:"baseUrl"`
 }
