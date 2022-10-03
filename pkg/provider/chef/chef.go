@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
+	"regexp"
 
 	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	"github.com/external-secrets/external-secrets/pkg/utils"
 	"github.com/go-chef/chef"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -13,6 +16,7 @@ import (
 )
 
 const (
+	errChefStore                             = "received invalid Chef SecretStore resource: %w"
 	errUnexpectedStoreSpec                   = "unexpected store spec"
 	errMissingName                           = "missing Name"
 	errMissingBaseURL                        = "missing BaseURL"
@@ -20,6 +24,8 @@ const (
 	errMissingPublicKey                      = "missing Public Key"
 	errInvalidClusterStoreMissingPKNamespace = "invalid ClusterSecretStore: missing Chef PublicKey Namespace"
 	errFetchK8sSecret                        = "could not fetch PublicKey Secret: %w"
+	errChefInvalidURL                        = "unable to parse URL: %w"
+	errChefInvalidName                       = "invalid name: allowed values are lowecase letters, numbers, hyphens and underscores"
 )
 
 type Providerchef struct {
@@ -116,8 +122,40 @@ func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.
 
 // ValidateStore checks if the provided store is valid.
 func (provider *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
-	//return validateStore(store)
-	return fmt.Errorf(errMissingPublicKey)
+	storeSpec := store.GetSpec()
+	if storeSpec == nil {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
+	}
+	chefSpec := storeSpec.Provider.Chef
+	if chefSpec == nil {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
+	}
+	if chefSpec.BaseURL == "" {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingBaseURL))
+	}
+	//check valid URL
+	if _, err := url.Parse(chefSpec.BaseURL); err != nil {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidURL, err))
+	}
+	if chefSpec.Name == "" {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingName))
+	}
+	//check if Name contains only lowecase letters, numbers, hyphens and underscores
+	var validNameRegEx = regexp.MustCompile(`^[a-z0-9\_\-]*$`)
+	if !validNameRegEx.MatchString(chefSpec.Name) {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidName))
+	}
+	if chefSpec.Auth == nil {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingAuth))
+	}
+	if chefSpec.Auth.SecretRef.PublicKey.Key == "" {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingPublicKey))
+	}
+	// check namespace compared to kind
+	if err := utils.ValidateSecretSelector(store, chefSpec.Auth.SecretRef.PublicKey); err != nil {
+		return fmt.Errorf(errChefStore, err)
+	}
+	return nil
 }
 
 /*
