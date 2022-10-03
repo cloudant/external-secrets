@@ -126,6 +126,9 @@ func (provider *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
 	if storeSpec == nil {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
 	}
+	if storeSpec.Provider == nil {
+		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
+	}
 	chefSpec := storeSpec.Provider.Chef
 	if chefSpec == nil {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
