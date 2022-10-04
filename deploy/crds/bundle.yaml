@@ -1857,8 +1857,8 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                publickey:
-                                  description: PublicKey is the Signing Key in PEM format, used for authentication.
+                                secretKey:
+                                  description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
                                       description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
@@ -1871,7 +1871,7 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - publickey
+                                - secretKey
                               type: object
                           required:
                             - secretRef
@@ -4806,8 +4806,8 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                publickey:
-                                  description: PublicKey is the Signing Key in PEM format, used for authentication.
+                                secretKey:
+                                  description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
                                       description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
@@ -4820,7 +4820,7 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - publickey
+                                - secretKey
                               type: object
                           required:
                             - secretRef

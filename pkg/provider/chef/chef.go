@@ -7,12 +7,13 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	"github.com/external-secrets/external-secrets/pkg/utils"
 	"github.com/go-chef/chef"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	"github.com/external-secrets/external-secrets/pkg/utils"
 )
 
 const (
@@ -22,10 +23,11 @@ const (
 	errMissingBaseURL                        = "missing BaseURL"
 	errMissingAuth                           = "cannot initialize Chef Client: no valid authType was specified"
 	errMissingPublicKey                      = "missing Public Key"
-	errInvalidClusterStoreMissingPKNamespace = "invalid ClusterSecretStore: missing Chef PublicKey Namespace"
-	errFetchK8sSecret                        = "could not fetch PublicKey Secret: %w"
+	errInvalidClusterStoreMissingPKNamespace = "invalid ClusterSecretStore: missing Chef SecretKey Namespace"
+	errFetchK8sSecret                        = "could not fetch SecretKey Secret: %w"
 	errChefInvalidURL                        = "unable to parse URL: %w"
 	errChefInvalidName                       = "invalid name: allowed values are lowecase letters, numbers, hyphens and underscores"
+	errChefClient                            = "unable to create chef client: %w"
 )
 
 type Providerchef struct {
@@ -57,16 +59,16 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 	if chefSpec.Auth == nil {
 		return nil, fmt.Errorf(errMissingAuth)
 	}
-	if len(chefSpec.Auth.SecretRef.PublicKey.Key) == 0 || &chefSpec.Auth.SecretRef.PublicKey.Key == nil {
+	if chefSpec.Auth.SecretRef.SecretKey.Key == "" {
 		return nil, fmt.Errorf(errMissingPublicKey)
 	}
 	credentialsSecret := &corev1.Secret{}
 	objectKey := types.NamespacedName{
-		Name:      chefSpec.Auth.SecretRef.PublicKey.Name,
+		Name:      chefSpec.Auth.SecretRef.SecretKey.Name,
 		Namespace: namespace,
 	}
 	if store.GetObjectKind().GroupVersionKind().Kind == v1beta1.ClusterSecretStoreKind {
-		objectKey.Namespace = *chefSpec.Auth.SecretRef.PublicKey.Namespace
+		objectKey.Namespace = *chefSpec.Auth.SecretRef.SecretKey.Namespace
 	} else {
 		return nil, fmt.Errorf(errInvalidClusterStoreMissingPKNamespace)
 	}
@@ -76,20 +78,23 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 		return nil, fmt.Errorf(errFetchK8sSecret, err)
 	}
 
-	publickey := credentialsSecret.Data[chefSpec.Auth.SecretRef.PublicKey.Key]
+	publickey := credentialsSecret.Data[chefSpec.Auth.SecretRef.SecretKey.Key]
 	if (publickey == nil) || (len(publickey) == 0) {
 		return nil, fmt.Errorf(errMissingPublicKey)
 	}
 
-	client, err := chef.NewClient(&chef.Config{
+	client, cerr := chef.NewClient(&chef.Config{
 		Name:    chefSpec.Name,
 		Key:     string(publickey),
 		BaseURL: chefSpec.BaseURL,
 	})
 
+	if cerr != nil {
+		return nil, fmt.Errorf(errChefClient, err)
+	}
+
 	providerchef.chefClient = client
 	return providerchef, nil
-
 }
 
 // TO be implemented
@@ -121,7 +126,7 @@ func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.
 }
 
 // ValidateStore checks if the provided store is valid.
-func (provider *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
+func (providerchef *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
 	storeSpec := store.GetSpec()
 	if storeSpec == nil {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
@@ -136,14 +141,14 @@ func (provider *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
 	if chefSpec.BaseURL == "" {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingBaseURL))
 	}
-	//check valid URL
+	// check valid URL
 	if _, err := url.Parse(chefSpec.BaseURL); err != nil {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidURL, err))
 	}
 	if chefSpec.Name == "" {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingName))
 	}
-	//check if Name contains only lowecase letters, numbers, hyphens and underscores
+	// check if Name contains only lowecase letters, numbers, hyphens and underscores
 	var validNameRegEx = regexp.MustCompile(`^[a-z0-9\_\-]*$`)
 	if !validNameRegEx.MatchString(chefSpec.Name) {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidName))
@@ -151,11 +156,11 @@ func (provider *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
 	if chefSpec.Auth == nil {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingAuth))
 	}
-	if chefSpec.Auth.SecretRef.PublicKey.Key == "" {
+	if chefSpec.Auth.SecretRef.SecretKey.Key == "" {
 		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingPublicKey))
 	}
 	// check namespace compared to kind
-	if err := utils.ValidateSecretSelector(store, chefSpec.Auth.SecretRef.PublicKey); err != nil {
+	if err := utils.ValidateSecretSelector(store, chefSpec.Auth.SecretRef.SecretKey); err != nil {
 		return fmt.Errorf(errChefStore, err)
 	}
 	return nil
