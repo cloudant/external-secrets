@@ -89,10 +89,6 @@ type SecretStoreProvider struct {
 	// Fake configures a store with static key/value pairs
 	// +optional
 	Fake *FakeProvider `json:"fake,omitempty"`
-
-	// Chef configures this store to sync secrets with chef server
-	// +optional
-	Chef *ChefProvider `json:"chef,omitempty"`
 }
 
 type SecretStoreRetrySettings struct {
