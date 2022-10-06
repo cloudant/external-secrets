@@ -1621,15 +1621,14 @@ func (in *SecretStoreProvider) DeepCopyInto(out *SecretStoreProvider) {
 		*out = new(SenhaseguraProvider)
 		(*in).DeepCopyInto(*out)
 	}
-<<<<<<< HEAD
 	if in.Chef != nil {
 		in, out := &in.Chef, &out.Chef
 		*out = new(ChefProvider)
-=======
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Doppler != nil {
 		in, out := &in.Doppler, &out.Doppler
 		*out = new(DopplerProvider)
->>>>>>> main
 		(*in).DeepCopyInto(*out)
 	}
 }

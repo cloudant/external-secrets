@@ -1809,12 +1809,8 @@ ExternalSecretFind
 </td>
 <td>
 <em>(Optional)</em>
-<<<<<<< HEAD
-<p>Used to rewrite secret Keys after getting them from the secret Provider</p>
-=======
 <p>Used to rewrite secret Keys after getting them from the secret Provider
 Multiple Rewrite operations can be provided. They are applied in a layered order (first to last)</p>
->>>>>>> main
 </td>
 </tr>
 </tbody>
@@ -2109,12 +2105,8 @@ ExternalSecretRewriteRegexp
 </td>
 <td>
 <em>(Optional)</em>
-<<<<<<< HEAD
-<p>Rewrite using regular expressions</p>
-=======
 <p>Used to rewrite with regular expressions.
 The resulting key will be the output of a regexp.ReplaceAll operation.</p>
->>>>>>> main
 </td>
 </tr>
 </tbody>
@@ -2143,11 +2135,7 @@ string
 </em>
 </td>
 <td>
-<<<<<<< HEAD
-<p>Regular expression to use as a re.Compiler.</p>
-=======
 <p>Used to define the regular expression of a re.Compiler.</p>
->>>>>>> main
 </td>
 </tr>
 <tr>
@@ -2158,11 +2146,7 @@ string
 </em>
 </td>
 <td>
-<<<<<<< HEAD
-<p>Target output for a replace operation.</p>
-=======
 <p>Used to define the target pattern of a ReplaceAll operation.</p>
->>>>>>> main
 </td>
 </tr>
 </tbody>

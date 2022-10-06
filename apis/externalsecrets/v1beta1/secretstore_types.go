@@ -106,15 +106,12 @@ type SecretStoreProvider struct {
 	// +optional
 	Senhasegura *SenhaseguraProvider `json:"senhasegura,omitempty"`
 
-<<<<<<< HEAD
 	// Chef configures this store to sync secrets with chef server
 	// +optional
 	Chef *ChefProvider `json:"chef,omitempty"`
-=======
 	// Doppler configures this store to sync secrets using the Doppler provider
 	// +optional
 	Doppler *DopplerProvider `json:"doppler,omitempty"`
->>>>>>> main
 }
 
 type CAProviderType string

@@ -2,11 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-<<<<<<< HEAD
-    controller-gen.kubebuilder.io/version: v0.9.2
-=======
     controller-gen.kubebuilder.io/version: v0.10.0
->>>>>>> main
   creationTimestamp: null
   name: clusterexternalsecrets.external-secrets.io
 spec:
@@ -384,11 +380,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-<<<<<<< HEAD
-    controller-gen.kubebuilder.io/version: v0.9.2
-=======
     controller-gen.kubebuilder.io/version: v0.10.0
->>>>>>> main
   creationTimestamp: null
   name: clustersecretstores.external-secrets.io
 spec:
@@ -1856,7 +1848,6 @@ spec:
                       required:
                         - vaultUrl
                       type: object
-<<<<<<< HEAD
                     chef:
                       description: Chef configures this store to sync secrets with chef server
                       properties:
@@ -1868,18 +1859,6 @@ spec:
                               properties:
                                 publickey:
                                   description: PublicKey is the Signing Key in PEM format, used for authentication.
-=======
-                    doppler:
-                      description: Doppler configures this store to sync secrets using the Doppler provider
-                      properties:
-                        auth:
-                          description: Auth configures how the Operator authenticates with the Doppler API
-                          properties:
-                            secretRef:
-                              properties:
-                                dopplerToken:
-                                  description: The DopplerToken is used for authentication. See https://docs.doppler.com/reference/api#authentication for auth token types. The Key attribute defaults to dopplerToken if not specified.
->>>>>>> main
                                   properties:
                                     key:
                                       description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
@@ -1892,16 +1871,11 @@ spec:
                                       type: string
                                   type: object
                               required:
-<<<<<<< HEAD
                                 - publickey
-=======
-                                - dopplerToken
->>>>>>> main
                               type: object
                           required:
                             - secretRef
                           type: object
-<<<<<<< HEAD
                         baseUrl:
                           description: BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
                           type: string
@@ -1912,7 +1886,34 @@ spec:
                         - auth
                         - baseUrl
                         - name
-=======
+                      type: object
+                    doppler:
+                      description: Doppler configures this store to sync secrets using the Doppler provider
+                      properties:
+                        auth:
+                          description: Auth configures how the Operator authenticates with the Doppler API
+                          properties:
+                            secretRef:
+                              properties:
+                                dopplerToken:
+                                  description: The DopplerToken is used for authentication. See https://docs.doppler.com/reference/api#authentication for auth token types. The Key attribute defaults to dopplerToken if not specified.
+                                  properties:
+                                    key:
+                                      description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+                                      type: string
+                                    name:
+                                      description: The name of the Secret resource being referred to.
+                                      type: string
+                                    namespace:
+                                      description: Namespace of the resource being referred to. Ignored if referent is not cluster-scoped. cluster-scoped defaults to the namespace of the referent.
+                                      type: string
+                                  type: object
+                              required:
+                                - dopplerToken
+                              type: object
+                          required:
+                            - secretRef
+                          type: object
                         config:
                           description: Doppler config (required if not using a Service Token)
                           type: string
@@ -1939,7 +1940,6 @@ spec:
                           type: string
                       required:
                         - auth
->>>>>>> main
                       type: object
                     fake:
                       description: Fake configures a store with static key/value pairs
@@ -2844,11 +2844,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-<<<<<<< HEAD
-    controller-gen.kubebuilder.io/version: v0.9.2
-=======
     controller-gen.kubebuilder.io/version: v0.10.0
->>>>>>> main
   creationTimestamp: null
   name: externalsecrets.external-secrets.io
 spec:
@@ -3390,11 +3386,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-<<<<<<< HEAD
-    controller-gen.kubebuilder.io/version: v0.9.2
-=======
     controller-gen.kubebuilder.io/version: v0.10.0
->>>>>>> main
   creationTimestamp: null
   name: secretstores.external-secrets.io
 spec:
@@ -4862,7 +4854,6 @@ spec:
                       required:
                         - vaultUrl
                       type: object
-<<<<<<< HEAD
                     chef:
                       description: Chef configures this store to sync secrets with chef server
                       properties:
@@ -4874,18 +4865,6 @@ spec:
                               properties:
                                 publickey:
                                   description: PublicKey is the Signing Key in PEM format, used for authentication.
-=======
-                    doppler:
-                      description: Doppler configures this store to sync secrets using the Doppler provider
-                      properties:
-                        auth:
-                          description: Auth configures how the Operator authenticates with the Doppler API
-                          properties:
-                            secretRef:
-                              properties:
-                                dopplerToken:
-                                  description: The DopplerToken is used for authentication. See https://docs.doppler.com/reference/api#authentication for auth token types. The Key attribute defaults to dopplerToken if not specified.
->>>>>>> main
                                   properties:
                                     key:
                                       description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
@@ -4898,16 +4877,11 @@ spec:
                                       type: string
                                   type: object
                               required:
-<<<<<<< HEAD
                                 - publickey
-=======
-                                - dopplerToken
->>>>>>> main
                               type: object
                           required:
                             - secretRef
                           type: object
-<<<<<<< HEAD
                         baseUrl:
                           description: BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
                           type: string
@@ -4918,7 +4892,34 @@ spec:
                         - auth
                         - baseUrl
                         - name
-=======
+                      type: object
+                    doppler:
+                      description: Doppler configures this store to sync secrets using the Doppler provider
+                      properties:
+                        auth:
+                          description: Auth configures how the Operator authenticates with the Doppler API
+                          properties:
+                            secretRef:
+                              properties:
+                                dopplerToken:
+                                  description: The DopplerToken is used for authentication. See https://docs.doppler.com/reference/api#authentication for auth token types. The Key attribute defaults to dopplerToken if not specified.
+                                  properties:
+                                    key:
+                                      description: The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+                                      type: string
+                                    name:
+                                      description: The name of the Secret resource being referred to.
+                                      type: string
+                                    namespace:
+                                      description: Namespace of the resource being referred to. Ignored if referent is not cluster-scoped. cluster-scoped defaults to the namespace of the referent.
+                                      type: string
+                                  type: object
+                              required:
+                                - dopplerToken
+                              type: object
+                          required:
+                            - secretRef
+                          type: object
                         config:
                           description: Doppler config (required if not using a Service Token)
                           type: string
@@ -4945,7 +4946,6 @@ spec:
                           type: string
                       required:
                         - auth
->>>>>>> main
                       type: object
                     fake:
                       description: Fake configures a store with static key/value pairs

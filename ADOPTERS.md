@@ -16,9 +16,6 @@
 - [Polarpoint](https://www.polarpoint.io/)
 - [Radio France](https://www.radiofrance.fr/)
 - [Made People](https://madepeople.se/)
-<<<<<<< HEAD
-=======
 - [Voiceflow](https://www.voiceflow.com/)
->>>>>>> main
 
 Countless others that can't disclose that information! :)

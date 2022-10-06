@@ -48,22 +48,6 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
 	github.com/akeylesslabs/akeyless-go-cloud-id v0.3.4
-<<<<<<< HEAD
-	github.com/akeylesslabs/akeyless-go/v2 v2.19.0
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1782
-	github.com/aws/aws-sdk-go v1.44.101
-	github.com/crossplane/crossplane-runtime v0.17.0
-	github.com/go-logr/logr v1.2.3
-	github.com/go-test/deep v1.0.4 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
-	github.com/google/go-cmp v0.5.9
-	github.com/google/uuid v1.3.0
-	github.com/googleapis/gax-go/v2 v2.5.1
-	github.com/hashicorp/vault/api v1.7.2
-	github.com/hashicorp/vault/api/auth/approle v0.2.0
-	github.com/hashicorp/vault/api/auth/kubernetes v0.2.0
-	github.com/hashicorp/vault/api/auth/ldap v0.2.0
-=======
 	github.com/akeylesslabs/akeyless-go/v2 v2.20.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1799
 	github.com/aws/aws-sdk-go v1.44.101
@@ -77,7 +61,6 @@ require (
 	github.com/hashicorp/vault/api/auth/approle v0.3.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.3.0
 	github.com/hashicorp/vault/api/auth/ldap v0.3.0
->>>>>>> main
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/lestrrat-go/jwx v1.2.25
 	github.com/onsi/ginkgo/v2 v2.1.6
@@ -94,15 +77,9 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
 	go.uber.org/zap v1.23.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-<<<<<<< HEAD
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
-	google.golang.org/api v0.96.0
-	google.golang.org/genproto v0.0.0-20220902135211-223410557253
-=======
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
 	google.golang.org/api v0.98.0
 	google.golang.org/genproto v0.0.0-20220920201722-2b89144ce006
->>>>>>> main
 	google.golang.org/grpc v1.49.0
 	gopkg.in/yaml.v3 v3.0.1
 	grpc.go4.org v0.0.0-20170609214715-11d0a25b4919
@@ -112,23 +89,15 @@ require (
 	k8s.io/client-go v1.5.2
 	k8s.io/utils v0.0.0-20220823124924-e9cbc92d1a73
 	sigs.k8s.io/controller-runtime v0.12.3
-<<<<<<< HEAD
-	sigs.k8s.io/controller-tools v0.9.2
-=======
 	sigs.k8s.io/controller-tools v0.10.0
->>>>>>> main
 )
 
 require github.com/1Password/connect-sdk-go v1.5.0
 
-<<<<<<< HEAD
-require sigs.k8s.io/yaml v1.3.0
-=======
 require (
 	github.com/hashicorp/golang-lru v0.5.4
 	sigs.k8s.io/yaml v1.3.0
 )
->>>>>>> main
 
 require (
 	cloud.google.com/go/compute v1.9.0 // indirect
@@ -155,10 +124,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-<<<<<<< HEAD
 	github.com/go-chef/chef v0.28.0
-=======
->>>>>>> main
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -171,10 +137,7 @@ require (
 	github.com/gobuffalo/flect v0.3.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-<<<<<<< HEAD
-=======
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
->>>>>>> main
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -197,14 +160,8 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
-<<<<<<< HEAD
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
-	github.com/hashicorp/vault/sdk v0.5.3 // indirect
-=======
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
 	github.com/hashicorp/vault/sdk v0.6.0 // indirect
->>>>>>> main
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect

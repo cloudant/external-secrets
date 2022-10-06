@@ -68,11 +68,8 @@ var (
 	certCheckInterval                     time.Duration
 	certLookaheadInterval                 time.Duration
 	enableAWSSession                      bool
-<<<<<<< HEAD
-=======
 	enableVaultTokenCache                 bool
 	vaultTokenCacheSize                   int
->>>>>>> main
 	tlsCiphers                            string
 	tlsMinVersion                         string
 )
