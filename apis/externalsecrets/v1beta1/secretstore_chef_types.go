@@ -25,8 +25,8 @@ type ChefAuth struct {
 
 // ChefAuthSecretRef holds secret references for chef server login credentials.
 type ChefAuthSecretRef struct {
-	// PublicKey is the Signing Key in PEM format, used for authentication.
-	PublicKey esmeta.SecretKeySelector `json:"publickey"`
+	// SecretKey is the Signing Key in PEM format, used for authentication.
+	SecretKey esmeta.SecretKeySelector `json:"secretKey"`
 }
 
 // ChefProvider configures a store to sync secrets using basic chef server connection credentials.
