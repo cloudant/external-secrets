@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 package chef
 
 import (
@@ -102,11 +101,9 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 		Key:     string(publickey),
 		BaseURL: chefSpec.BaseURL,
 	})
-
 	if cerr != nil {
 		return nil, fmt.Errorf(errChefClient, err)
 	}
-
 	providerchef.chefClient = client
 	return providerchef, nil
 }

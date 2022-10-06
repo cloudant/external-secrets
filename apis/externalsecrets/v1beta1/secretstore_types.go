@@ -38,7 +38,7 @@ type SecretStoreSpec struct {
 	RefreshInterval int `json:"refreshInterval"`
 }
 
-// SecretStoreProvider contains the provider-specific configration.
+// SecretStoreProvider contains the provider-specific configuration.
 // +kubebuilder:validation:MinProperties=1
 // +kubebuilder:validation:MaxProperties=1
 type SecretStoreProvider struct {
@@ -109,6 +109,9 @@ type SecretStoreProvider struct {
 	// Chef configures this store to sync secrets with chef server
 	// +optional
 	Chef *ChefProvider `json:"chef,omitempty"`
+	// Doppler configures this store to sync secrets using the Doppler provider
+	// +optional
+	Doppler *DopplerProvider `json:"doppler,omitempty"`
 }
 
 type CAProviderType string
