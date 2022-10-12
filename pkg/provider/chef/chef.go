@@ -15,10 +15,8 @@ package chef
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
-	"regexp"
 
 	"github.com/go-chef/chef"
 	corev1 "k8s.io/api/core/v1"
@@ -31,11 +29,14 @@ import (
 
 const (
 	errChefStore                             = "received invalid Chef SecretStore resource: %w"
-	errUnexpectedStoreSpec                   = "unexpected store spec"
+	errMissingStore                          = "missing store"
+	errMisingStoreSpec                       = "missing store spec"
+	errMissingProvider                       = "missing provider"
+	errMissingChefProvider                   = "missing chef provider"
 	errMissingName                           = "missing Name"
 	errMissingBaseURL                        = "missing BaseURL"
 	errMissingAuth                           = "cannot initialize Chef Client: no valid authType was specified"
-	errMissingPublicKey                      = "missing Public Key"
+	errMissingSecretKey                      = "missing Secret Key"
 	errInvalidClusterStoreMissingPKNamespace = "invalid ClusterSecretStore: missing Chef SecretKey Namespace"
 	errFetchK8sSecret                        = "could not fetch SecretKey Secret: %w"
 	errChefInvalidURL                        = "unable to parse URL: %w"
@@ -58,50 +59,37 @@ func init() {
 }
 
 func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.GenericStore, kube kclient.Client, namespace string) (v1beta1.SecretsClient, error) {
-	storeSpec := store.GetSpec()
-	if storeSpec == nil || storeSpec.Provider.Chef == nil {
-		return nil, errors.New(errUnexpectedStoreSpec)
-	}
-	chefSpec := storeSpec.Provider.Chef
-	if chefSpec.Name == "" {
-		return nil, fmt.Errorf(errMissingName)
-	}
-	if chefSpec.BaseURL == "" {
-		return nil, fmt.Errorf(errMissingBaseURL)
-	}
-	if chefSpec.Auth == nil {
-		return nil, fmt.Errorf(errMissingAuth)
-	}
-	if chefSpec.Auth.SecretRef.SecretKey.Key == "" {
-		return nil, fmt.Errorf(errMissingPublicKey)
+	chefProvider, err := getChefProvider(store)
+	if err != nil {
+		return nil, err
 	}
 	credentialsSecret := &corev1.Secret{}
 	objectKey := types.NamespacedName{
-		Name:      chefSpec.Auth.SecretRef.SecretKey.Name,
+		Name:      chefProvider.Auth.SecretRef.SecretKey.Name,
 		Namespace: namespace,
 	}
 	if store.GetObjectKind().GroupVersionKind().Kind == v1beta1.ClusterSecretStoreKind {
-		objectKey.Namespace = *chefSpec.Auth.SecretRef.SecretKey.Namespace
+		objectKey.Namespace = *chefProvider.Auth.SecretRef.SecretKey.Namespace
 	} else {
 		return nil, fmt.Errorf(errInvalidClusterStoreMissingPKNamespace)
 	}
 
-	err := kube.Get(ctx, objectKey, credentialsSecret)
+	err = kube.Get(ctx, objectKey, credentialsSecret)
 	if err != nil {
 		return nil, fmt.Errorf(errFetchK8sSecret, err)
 	}
 
-	publickey := credentialsSecret.Data[chefSpec.Auth.SecretRef.SecretKey.Key]
-	if (publickey == nil) || (len(publickey) == 0) {
-		return nil, fmt.Errorf(errMissingPublicKey)
+	secretKey := credentialsSecret.Data[chefProvider.Auth.SecretRef.SecretKey.Key]
+	if (secretKey == nil) || (len(secretKey) == 0) {
+		return nil, fmt.Errorf(errMissingSecretKey)
 	}
 
-	client, cerr := chef.NewClient(&chef.Config{
-		Name:    chefSpec.Name,
-		Key:     string(publickey),
-		BaseURL: chefSpec.BaseURL,
+	client, err := chef.NewClient(&chef.Config{
+		Name:    chefProvider.Name,
+		Key:     string(secretKey),
+		BaseURL: chefProvider.BaseURL,
 	})
-	if cerr != nil {
+	if err != nil {
 		return nil, fmt.Errorf(errChefClient, err)
 	}
 	providerchef.chefClient = client
@@ -138,43 +126,52 @@ func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.
 
 // ValidateStore checks if the provided store is valid.
 func (providerchef *Providerchef) ValidateStore(store v1beta1.GenericStore) error {
-	storeSpec := store.GetSpec()
-	if storeSpec == nil {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
-	}
-	if storeSpec.Provider == nil {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
-	}
-	chefSpec := storeSpec.Provider.Chef
-	if chefSpec == nil {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errUnexpectedStoreSpec))
-	}
-	if chefSpec.BaseURL == "" {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingBaseURL))
-	}
-	// check valid URL
-	if _, err := url.Parse(chefSpec.BaseURL); err != nil {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidURL, err))
-	}
-	if chefSpec.Name == "" {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingName))
-	}
-	// check if Name contains only lowecase letters, numbers, hyphens and underscores
-	var validNameRegEx = regexp.MustCompile(`^[a-z0-9\_\-]*$`)
-	if !validNameRegEx.MatchString(chefSpec.Name) {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errChefInvalidName))
-	}
-	if chefSpec.Auth == nil {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingAuth))
-	}
-	if chefSpec.Auth.SecretRef.SecretKey.Key == "" {
-		return fmt.Errorf(errChefStore, fmt.Errorf(errMissingPublicKey))
+	chefProvider, err := getChefProvider(store)
+	if err != nil {
+		return fmt.Errorf(errChefStore, err)
 	}
 	// check namespace compared to kind
-	if err := utils.ValidateSecretSelector(store, chefSpec.Auth.SecretRef.SecretKey); err != nil {
+	if err := utils.ValidateSecretSelector(store, chefProvider.Auth.SecretRef.SecretKey); err != nil {
 		return fmt.Errorf(errChefStore, err)
 	}
 	return nil
+}
+
+// getChefProvider validates the incoming store and return the chef provider.
+func getChefProvider(store v1beta1.GenericStore) (*v1beta1.ChefProvider, error) {
+	if store == nil {
+		return nil, fmt.Errorf(errMissingStore)
+	}
+	storeSpec := store.GetSpec()
+	if storeSpec == nil {
+		return nil, fmt.Errorf(errMisingStoreSpec)
+	}
+	provider := storeSpec.Provider
+	if provider == nil {
+		return nil, fmt.Errorf(errMissingProvider)
+	}
+	chefProvider := storeSpec.Provider.Chef
+	if chefProvider == nil {
+		return nil, fmt.Errorf(errMissingChefProvider)
+	}
+	if chefProvider.Name == "" {
+		return chefProvider, fmt.Errorf(errMissingName)
+	}
+	if chefProvider.BaseURL == "" {
+		return chefProvider, fmt.Errorf(errMissingBaseURL)
+	}
+	// check valid URL
+	if _, err := url.ParseRequestURI(chefProvider.BaseURL); err != nil {
+		return chefProvider, fmt.Errorf(errChefInvalidURL, err)
+	}
+	if chefProvider.Auth == nil {
+		return chefProvider, fmt.Errorf(errMissingAuth)
+	}
+	if chefProvider.Auth.SecretRef.SecretKey.Key == "" {
+		return chefProvider, fmt.Errorf(errMissingSecretKey)
+	}
+
+	return chefProvider, nil
 }
 
 /*
