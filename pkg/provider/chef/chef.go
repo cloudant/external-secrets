@@ -42,6 +42,7 @@ const (
 	errChefInvalidURL                        = "unable to parse URL: %w"
 	errChefInvalidName                       = "invalid name: allowed values are lowecase letters, numbers, hyphens and underscores"
 	errChefClient                            = "unable to create chef client: %w"
+	errChefProvider                          = "missing or invalid spec: %w"
 )
 
 type Providerchef struct {
@@ -61,7 +62,7 @@ func init() {
 func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.GenericStore, kube kclient.Client, namespace string) (v1beta1.SecretsClient, error) {
 	chefProvider, err := getChefProvider(store)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errChefProvider, err)
 	}
 	credentialsSecret := &corev1.Secret{}
 	objectKey := types.NamespacedName{
