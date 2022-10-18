@@ -19,11 +19,16 @@ import (
 	"testing"
 
 	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	v1 "github.com/external-secrets/external-secrets/apis/meta/v1"
 )
 
 const (
-	name    = "chef-demo-user"
-	baseURL = "https://chef.cloudant.com/organizations/myorg/"
+	name           = "chef-demo-user"
+	baseURL        = "https://chef.cloudant.com/organizations/myorg/"
+	baseInvalidURL = "invalid base URL"
+	authName       = "chef-demo-auth-name"
+	authKey        = "chef-demo-auth-key"
+	authNamespace  = "chef-demo-auth-namespace"
 )
 
 type ValidateStoreTestCase struct {
@@ -33,13 +38,14 @@ type ValidateStoreTestCase struct {
 
 type storeModifier func(*esv1beta1.SecretStore) *esv1beta1.SecretStore
 
-func makeSecretStore(name, baseURL string, fn ...storeModifier) *esv1beta1.SecretStore {
+func makeSecretStore(name, baseURL string, auth *esv1beta1.ChefAuth, fn ...storeModifier) *esv1beta1.SecretStore {
 	store := &esv1beta1.SecretStore{
 		Spec: esv1beta1.SecretStoreSpec{
 			Provider: &esv1beta1.SecretStoreProvider{
 				Chef: &esv1beta1.ChefProvider{
 					Name:    name,
 					BaseURL: baseURL,
+					Auth:    auth,
 				},
 			},
 		},
@@ -51,20 +57,62 @@ func makeSecretStore(name, baseURL string, fn ...storeModifier) *esv1beta1.Secre
 	return store
 }
 
+func makeAuth(name string, namespace string, key string) *esv1beta1.ChefAuth {
+	return &esv1beta1.ChefAuth{
+		SecretRef: esv1beta1.ChefAuthSecretRef{
+			SecretKey: v1.SecretKeySelector{
+				Name:      name,
+				Key:       key,
+				Namespace: &namespace,
+			},
+		},
+	}
+}
+
 // minimal TestCases written, more to be added.
 func TestValidateStore(t *testing.T) {
 	testCases := []ValidateStoreTestCase{
 		{
-			store: makeSecretStore("", baseURL),
+			store: makeSecretStore("", baseURL, makeAuth(authName, authNamespace, authKey)),
 			err:   fmt.Errorf("received invalid Chef SecretStore resource: missing Name"),
 		},
 		{
-			store: makeSecretStore(name, ""),
+			store: makeSecretStore(name, "", makeAuth(authName, authNamespace, authKey)),
 			err:   fmt.Errorf("received invalid Chef SecretStore resource: missing BaseURL"),
 		},
 		{
-			store: makeSecretStore(name, baseURL),
+			store: makeSecretStore(name, baseURL, nil),
 			err:   fmt.Errorf("received invalid Chef SecretStore resource: cannot initialize Chef Client: no valid authType was specified"),
+		},
+		{
+			store: makeSecretStore(name, baseInvalidURL, makeAuth(authName, authNamespace, authKey)),
+			err:   fmt.Errorf("received invalid Chef SecretStore resource: unable to parse URL: parse \"invalid base URL\": invalid URI for request"),
+		},
+		{
+			store: makeSecretStore(name, baseURL, makeAuth(authName, authNamespace, "")),
+			err:   fmt.Errorf("received invalid Chef SecretStore resource: missing Secret Key"),
+		},
+		{
+			store: makeSecretStore(name, baseURL, makeAuth(authName, authNamespace, authKey)),
+			err:   fmt.Errorf("received invalid Chef SecretStore resource: namespace not allowed with namespaced SecretStore"),
+		},
+		{
+			store: &esv1beta1.SecretStore{
+				Spec: esv1beta1.SecretStoreSpec{
+					Provider: nil,
+				},
+			},
+			err: fmt.Errorf("received invalid Chef SecretStore resource: missing provider"),
+		},
+		{
+			store: &esv1beta1.SecretStore{
+				Spec: esv1beta1.SecretStoreSpec{
+					Provider: &esv1beta1.SecretStoreProvider{
+						Chef: nil,
+					},
+				},
+			},
+			err: fmt.Errorf("received invalid Chef SecretStore resource: missing chef provider"),
 		},
 	}
 	pc := Providerchef{}
