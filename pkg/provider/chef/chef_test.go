@@ -57,7 +57,7 @@ func makeSecretStore(name, baseURL string, auth *esv1beta1.ChefAuth, fn ...store
 	return store
 }
 
-func makeAuth(name string, namespace string, key string) *esv1beta1.ChefAuth {
+func makeAuth(name, namespace, key string) *esv1beta1.ChefAuth {
 	return &esv1beta1.ChefAuth{
 		SecretRef: esv1beta1.ChefAuthSecretRef{
 			SecretKey: v1.SecretKeySelector{
