@@ -61,7 +61,6 @@ nav:
       - Parameter Store: provider/aws-parameter-store.md
     - Azure:
       - Key Vault: provider/azure-key-vault.md
-
     - Google:
       - Secret Manager: provider/google-secrets-manager.md
     - IBM:

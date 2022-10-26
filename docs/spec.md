@@ -783,7 +783,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.KubernetesServer">KubernetesServer</a>, 
+<a href="#external-secrets.io/v1beta1.KubernetesServer">KubernetesServer</a>,
 <a href="#external-secrets.io/v1beta1.VaultProvider">VaultProvider</a>)
 </p>
 <p>
@@ -1664,7 +1664,7 @@ ExternalSecretStatus
 (<code>string</code> alias)</p></h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ExternalSecretDataRemoteRef">ExternalSecretDataRemoteRef</a>, 
+<a href="#external-secrets.io/v1beta1.ExternalSecretDataRemoteRef">ExternalSecretDataRemoteRef</a>,
 <a href="#external-secrets.io/v1beta1.ExternalSecretFind">ExternalSecretFind</a>)
 </p>
 <p>
@@ -1819,7 +1819,7 @@ Multiple Rewrite operations can be provided. They are applied in a layered order
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ExternalSecretData">ExternalSecretData</a>, 
+<a href="#external-secrets.io/v1beta1.ExternalSecretData">ExternalSecretData</a>,
 <a href="#external-secrets.io/v1beta1.ExternalSecretDataFromRemoteRef">ExternalSecretDataFromRemoteRef</a>)
 </p>
 <p>
@@ -1916,7 +1916,7 @@ ExternalSecretDecodingStrategy
 (<code>string</code> alias)</p></h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ExternalSecretDataRemoteRef">ExternalSecretDataRemoteRef</a>, 
+<a href="#external-secrets.io/v1beta1.ExternalSecretDataRemoteRef">ExternalSecretDataRemoteRef</a>,
 <a href="#external-secrets.io/v1beta1.ExternalSecretFind">ExternalSecretFind</a>)
 </p>
 <p>
@@ -2155,7 +2155,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ClusterExternalSecretSpec">ClusterExternalSecretSpec</a>, 
+<a href="#external-secrets.io/v1beta1.ClusterExternalSecretSpec">ClusterExternalSecretSpec</a>,
 <a href="#external-secrets.io/v1beta1.ExternalSecret">ExternalSecret</a>)
 </p>
 <p>
@@ -4091,7 +4091,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ClusterSecretStore">ClusterSecretStore</a>, 
+<a href="#external-secrets.io/v1beta1.ClusterSecretStore">ClusterSecretStore</a>,
 <a href="#external-secrets.io/v1beta1.SecretStore">SecretStore</a>)
 </p>
 <p>
@@ -4163,7 +4163,7 @@ int
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#external-secrets.io/v1beta1.ClusterSecretStore">ClusterSecretStore</a>, 
+<a href="#external-secrets.io/v1beta1.ClusterSecretStore">ClusterSecretStore</a>,
 <a href="#external-secrets.io/v1beta1.SecretStore">SecretStore</a>)
 </p>
 <p>
