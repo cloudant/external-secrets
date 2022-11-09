@@ -1861,7 +1861,7 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                secretKey:
+                                getPrivateKey:
                                   description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
@@ -1875,21 +1875,21 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - secretKey
+                                - getPrivateKey
                               type: object
                           required:
                             - secretRef
                           type: object
-                        baseUrl:
-                          description: BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
+                        serverurl:
+                          description: ServerURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
                           type: string
-                        name:
-                          description: Name should be the user ID on the chef server
+                        username:
+                          description: UserName should be the user ID on the chef server
                           type: string
                       required:
                         - auth
-                        - baseUrl
-                        - name
+                        - serverurl
+                        - username
                       type: object
                     doppler:
                       description: Doppler configures this store to sync secrets using the Doppler provider
@@ -4871,7 +4871,7 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                secretKey:
+                                getPrivateKey:
                                   description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
@@ -4885,21 +4885,21 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - secretKey
+                                - getPrivateKey
                               type: object
                           required:
                             - secretRef
                           type: object
-                        baseUrl:
-                          description: BaseURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
+                        serverurl:
+                          description: ServerURL is the chef server URL used to connect to. If using orgs you should include your org in the url and terminate the url with a "/"
                           type: string
-                        name:
-                          description: Name should be the user ID on the chef server
+                        username:
+                          description: UserName should be the user ID on the chef server
                           type: string
                       required:
                         - auth
-                        - baseUrl
-                        - name
+                        - serverurl
+                        - username
                       type: object
                     doppler:
                       description: Doppler configures this store to sync secrets using the Doppler provider

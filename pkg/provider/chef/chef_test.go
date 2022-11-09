@@ -43,9 +43,9 @@ func makeSecretStore(name, baseURL string, auth *esv1beta1.ChefAuth, fn ...store
 		Spec: esv1beta1.SecretStoreSpec{
 			Provider: &esv1beta1.SecretStoreProvider{
 				Chef: &esv1beta1.ChefProvider{
-					Name:    name,
-					BaseURL: baseURL,
-					Auth:    auth,
+					UserName:  name,
+					ServerURL: baseURL,
+					Auth:      auth,
 				},
 			},
 		},
