@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-chef/chef"
+	"github.com/tidwall/gjson"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -51,6 +52,7 @@ const (
 	errNoDatabagsFound                       = "no Databags found"
 	errNoDatabagItemFound                    = "no Databag Item found"
 	errNoDatabagItemContentFound             = "no Databag Item's content found"
+	errNoDatabagItemPropertyFund             = "Mentioned property is not found in Databag item"
 	errUnableToConvertToJSON                 = "unable to convert databagItem into JSON"
 	errInvalidFormat                         = "invalid format. Expected value 'databagName/databagItemName'"
 )
@@ -187,27 +189,42 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 	}
 
 	key := ref.Key
-	nameSplitted := strings.Split(key, "/")
 
+	nameSplitted := strings.Split(key, "/")
 	databagName := nameSplitted[0]
 	databagItem := nameSplitted[1]
-	// dataBagName, databagItemName := getObjType(ref)
+
 	if len(databagName) != 0 && len(databagItem) != 0 {
-		return getSingleDatabagItem(providerchef, databagName, databagItem)
+		return getSingleDatabagItem(providerchef, databagName, databagItem, ref.Property)
 	}
 	return nil, fmt.Errorf(errInvalidFormat)
 }
 
-func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName string) ([]byte, error) {
+func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName string, propertyName string) ([]byte, error) {
 	ditem, err := providerchef.chefClient.DataBags.GetItem(dataBagName, databagItemName)
 	if err != nil {
 		return nil, fmt.Errorf(errNoDatabagItemFound)
 	}
+
 	jsonByte, err := json.Marshal(ditem)
 	if err != nil {
 		return nil, fmt.Errorf(errUnableToConvertToJSON)
 	}
+
+	if propertyName != "" {
+		return getPropertyFromDatabagItem(string(jsonByte), propertyName)
+	}
+
 	return jsonByte, nil
+}
+
+func getPropertyFromDatabagItem(jsonString string, propertyName string) ([]byte, error) {
+	result := gjson.Get(jsonString, propertyName)
+
+	if !result.Exists() {
+		return nil, fmt.Errorf(errNoDatabagItemPropertyFund)
+	}
+	return []byte(result.String()), nil
 }
 
 // GetSecretMap returns multiple k/v pairs from the provider, for dataFrom.extract.
@@ -315,11 +332,11 @@ func getChefProvider(store v1beta1.GenericStore) (*v1beta1.ChefProvider, error) 
 type ChefClient interface {
 	// DataBagItem fetch single data bag item "item"
 	DataBagItem(bag string, item string) (chef.DataBagItem, error)
-
+​
 	// AllDataBagItems get all items in a data bag
 	AllDataBagItems(bag string) (map[string]map[string]interface{}, error)
 }
-
+​
 // DataBagItem fetch single data bag item "item"
 // Return the content as unmarshalled JSON
 func (c chefclient) DataBagItem(bag string, item string) (chef.DataBagItem, error) {
