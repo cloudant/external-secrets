@@ -24,11 +24,11 @@ import (
 	"github.com/go-chef/chef"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/external-secrets/external-secrets/pkg/utils"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const (
@@ -78,7 +78,7 @@ type chefTypes struct {
 }
 
 func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.GenericStore, kube kclient.Client, namespace string) (v1beta1.SecretsClient, error) {
-	//handle validation of clustersecretstore, serstore, externalserstore
+	// handle validation of clustersecretstore, serstore, externalserstore
 
 	chefProvider, err := getChefProvider(store)
 	if err != nil {
@@ -131,17 +131,17 @@ func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
 }
 
 // GetAllSecrets Retrieves a map[string][]byte with the Databag names as key and the Databag's Items as secrets.
-// Retrives all DatabagItems of a Databag
+// Retrives all DatabagItems of a Databag.
 func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1.ExternalSecretFind) (map[string][]byte, error) {
 	if utils.IsNil(providerchef.chefClient) {
 		return nil, fmt.Errorf(errUninitalizedChefProvider)
 	}
-	//respMap := map[string][]byte{} //map[databagname]items
+	// respMap := map[string][]byte{} //map[databagname]items
 	// allDatabagsList, err := providerchef.chefClient.DataBags.List()
 	// if err != nil {
 	// 	return nil, fmt.Errorf(errNoDatabagsFound)
 	// }
-	databagName := ref.Name.DeepCopy().RegExp //find all databagItems of a databag. Name is databag name
+	databagName := ref.Name.DeepCopy().RegExp // find all databagItems of a databag. Name is databag name
 	databagItemsList, err := providerchef.chefClient.DataBags.ListItems(databagName)
 	if err != nil {
 		return nil, fmt.Errorf(errNoDatabagItemFound)
@@ -151,7 +151,7 @@ func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1
 		if err != nil {
 			return nil, fmt.Errorf(errNoDatabagItemContentFound)
 		}
-		//fmt.Printf("ditem: %+v\n", ditem)
+		// fmt.Printf("ditem: %+v\n", ditem)
 		v := reflect.ValueOf(ditem)
 		if v.Kind() == reflect.Map {
 			for _, key := range v.MapKeys() {
@@ -166,7 +166,7 @@ func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1
 			}
 		}
 
-		//secretsMap[databag] = []byte(fmt.Sprintf("%v", ditem))
+		// secretsMap[databag] = []byte(fmt.Sprintf("%v", ditem))
 		//fmt.Println(idata.String())
 	}
 
@@ -180,7 +180,7 @@ func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1
 	return nil, fmt.Errorf("GetAllSecrets yet to implement")
 }
 
-// GetSecret returns a databagItem present in the databag. format example: databagName/databagItemName
+// GetSecret returns a databagItem present in the databag. format example: databagName/databagItemName.
 func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.ExternalSecretDataRemoteRef) ([]byte, error) {
 	if utils.IsNil(providerchef.chefClient) {
 		return nil, fmt.Errorf(errUninitalizedChefProvider)
@@ -191,12 +191,11 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 
 	databagName := nameSplitted[0]
 	databagItem := nameSplitted[1]
-	//dataBagName, databagItemName := getObjType(ref)
+	// dataBagName, databagItemName := getObjType(ref)
 	if len(databagName) != 0 && len(databagItem) != 0 {
 		return getSingleDatabagItem(providerchef, databagName, databagItem)
 	}
 	return nil, fmt.Errorf(errInvalidFormat)
-
 }
 
 func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName string) ([]byte, error) {

@@ -1861,7 +1861,7 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                getPrivateKey:
+                                privateKeySecretRef:
                                   description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
@@ -1875,7 +1875,7 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - getPrivateKey
+                                - privateKeySecretRef
                               type: object
                           required:
                             - secretRef
@@ -4871,7 +4871,7 @@ spec:
                             secretRef:
                               description: ChefAuthSecretRef holds secret references for chef server login credentials.
                               properties:
-                                getPrivateKey:
+                                privateKeySecretRef:
                                   description: SecretKey is the Signing Key in PEM format, used for authentication.
                                   properties:
                                     key:
@@ -4885,7 +4885,7 @@ spec:
                                       type: string
                                   type: object
                               required:
-                                - getPrivateKey
+                                - privateKeySecretRef
                               type: object
                           required:
                             - secretRef
