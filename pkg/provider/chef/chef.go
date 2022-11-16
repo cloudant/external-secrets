@@ -52,7 +52,7 @@ const (
 	errNoDatabagsFound                       = "no Databags found"
 	errNoDatabagItemFound                    = "no Databag Item found"
 	errNoDatabagItemContentFound             = "no Databag Item's content found"
-	errNoDatabagItemPropertyFund             = "Mentioned property is not found in Databag item"
+	errNoDatabagItemPropertyFund             = "property is not found in Databag item"
 	errUnableToConvertToJSON                 = "unable to convert databagItem into JSON"
 	errInvalidFormat                         = "invalid format. Expected value 'databagName/databagItemName'"
 )
@@ -229,9 +229,24 @@ func getPropertyFromDatabagItem(jsonString string, propertyName string) ([]byte,
 
 // GetSecretMap returns multiple k/v pairs from the provider, for dataFrom.extract.
 func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.ExternalSecretDataRemoteRef) (map[string][]byte, error) {
-	// if utils.IsNil(providerchef.chefClient) {
-	// 	return nil, fmt.Errorf(errUninitalizedChefProvider)
-	// }
+	if utils.IsNil(providerchef.chefClient) {
+		return nil, fmt.Errorf(errUninitalizedChefProvider)
+	}
+	databagName := ref.Key
+	getAllSecrets := make(map[string][]byte)
+	dataItems, err := providerchef.chefClient.DataBags.ListItems(databagName)
+	if err != nil {
+		return nil, fmt.Errorf(errNoDatabagItemFound)
+	}
+
+	for dataItem := range *dataItems {
+		dItem, err := getSingleDatabagItem(providerchef, databagName, dataItem, "")
+		if err != nil {
+			fmt.Println(err)
+		}
+		getAllSecrets[dataItem] = dItem
+	}
+
 	// dataBag, dataItem := getObjType(ref)
 	// if dataBag != "" && dataItem != "" {
 	// 	ditem, err := providerchef.chefClient.DataBags.GetItem(dataBag, dataItem)
@@ -261,7 +276,7 @@ func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.
 	// 	return nil, fmt.Errorf(errDataFromKey)
 	// }
 	// return nil, fmt.Errorf(errUnknownObjectType, secretName)
-	return nil, fmt.Errorf("GetSecretMap yet to implement")
+	return getAllSecrets, nil
 }
 
 func getObjType(ref v1beta1.ExternalSecretDataRemoteRef) (string, string) {
