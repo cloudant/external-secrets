@@ -56,7 +56,7 @@ const (
 	errUnableToConvertToJSON                 = "unable to convert databagItem into JSON"
 	errInvalidFormat                         = "invalid format. Expected value 'databagName/databagItemName'"
 	errStoreValidateFailed                   = "unable to validate provided store. Check if username, serverUrl, privateKey are correct"
-	errServerUrlNoEndSlash                   = "server URL does not end with slash(/)"
+	errServerURLNoEndSlash                   = "server URL does not end with slash(/)"
 )
 
 type Providerchef struct {
@@ -131,12 +131,12 @@ func (providerchef *Providerchef) Close(ctx context.Context) error {
 // Validate checks if the client is configured correctly
 // to be able to retrieve secrets from the provider.
 func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
-	serverUrl := providerchef.chefClient.BaseURL.String()
-	fmt.Println(serverUrl)
-	endsWithSlash := strings.HasSuffix(serverUrl, "/")
+	serverURL := providerchef.chefClient.BaseURL.String()
+	endsWithSlash := strings.HasSuffix(serverURL, "/")
 	if !endsWithSlash {
-		return v1beta1.ValidationResultError, fmt.Errorf(errServerUrlNoEndSlash)
+		return v1beta1.ValidationResultError, fmt.Errorf(errServerURLNoEndSlash)
 	}
+
 	_, err := providerchef.chefClient.Users.Get(providerchef.chefClient.Auth.ClientName)
 	if err != nil {
 		return v1beta1.ValidationResultError, fmt.Errorf(errStoreValidateFailed)
@@ -212,7 +212,7 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 	return nil, fmt.Errorf(errInvalidFormat)
 }
 
-func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName string, propertyName string) ([]byte, error) {
+func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName, propertyName string) ([]byte, error) {
 	ditem, err := providerchef.chefClient.DataBags.GetItem(dataBagName, databagItemName)
 	if err != nil {
 		return nil, fmt.Errorf(errNoDatabagItemFound)
@@ -230,7 +230,7 @@ func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemNa
 	return jsonByte, nil
 }
 
-func getPropertyFromDatabagItem(jsonString string, propertyName string) ([]byte, error) {
+func getPropertyFromDatabagItem(jsonString, propertyName string) ([]byte, error) {
 	result := gjson.Get(jsonString, propertyName)
 
 	if !result.Exists() {
