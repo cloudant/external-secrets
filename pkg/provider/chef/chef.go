@@ -55,6 +55,8 @@ const (
 	errNoDatabagItemPropertyFund             = "property is not found in Databag item"
 	errUnableToConvertToJSON                 = "unable to convert databagItem into JSON"
 	errInvalidFormat                         = "invalid format. Expected value 'databagName/databagItemName'"
+	errStoreValidateFailed                   = "unable to validate provided store. Check if username, serverUrl, privateKey are correct"
+	errServerUrlNoEndSlash                   = "server URL does not end with slash(/)"
 )
 
 type Providerchef struct {
@@ -129,6 +131,16 @@ func (providerchef *Providerchef) Close(ctx context.Context) error {
 // Validate checks if the client is configured correctly
 // to be able to retrieve secrets from the provider.
 func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
+	serverUrl := providerchef.chefClient.BaseURL.String()
+	fmt.Println(serverUrl)
+	endsWithSlash := strings.HasSuffix(serverUrl, "/")
+	if !endsWithSlash {
+		return v1beta1.ValidationResultError, fmt.Errorf(errServerUrlNoEndSlash)
+	}
+	_, err := providerchef.chefClient.Users.Get(providerchef.chefClient.Auth.ClientName)
+	if err != nil {
+		return v1beta1.ValidationResultError, fmt.Errorf(errStoreValidateFailed)
+	}
 	return v1beta1.ValidationResultReady, nil
 }
 
@@ -169,7 +181,7 @@ func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1
 		}
 
 		// secretsMap[databag] = []byte(fmt.Sprintf("%v", ditem))
-		//fmt.Println(idata.String())
+		// fmt.Println(idata.String())
 	}
 
 	/*
