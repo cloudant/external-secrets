@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"reflect"
 	"strings"
 
 	"github.com/go-chef/chef"
@@ -52,10 +51,10 @@ const (
 	errNoDatabagsFound                       = "no Databags found"
 	errNoDatabagItemFound                    = "no Databag Item found"
 	errNoDatabagItemContentFound             = "no Databag Item's content found"
-	errNoDatabagItemPropertyFund             = "property is not found in Databag item"
+	errNoDatabagItemPropertyFound            = "property is not found in Databag item"
 	errUnableToConvertToJSON                 = "unable to convert databagItem into JSON"
 	errInvalidFormat                         = "invalid format. Expected value 'databagName/databagItemName'"
-	errStoreValidateFailed                   = "unable to validate provided store. Check if username, serverUrl, privateKey are correct"
+	errStoreValidateFailed                   = "unable to validate provided store. Check if username, serverUrl and privateKey are correct"
 	errServerURLNoEndSlash                   = "server URL does not end with slash(/)"
 )
 
@@ -75,12 +74,6 @@ func init() {
 	})
 }
 
-type chefTypes struct {
-	databagName     string
-	databagItemName string
-	property        string
-}
-
 func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.GenericStore, kube kclient.Client, namespace string) (v1beta1.SecretsClient, error) {
 	// handle validation of clustersecretstore, serstore, externalserstore
 
@@ -93,11 +86,6 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 		Name:      chefProvider.Auth.SecretRef.SecretKey.Name,
 		Namespace: namespace,
 	}
-	// if store.GetObjectKind().GroupVersionKind().Kind == v1beta1.ClusterSecretStoreKind {
-	// 	objectKey.Namespace = *chefProvider.Auth.SecretRef.SecretKey.Namespace
-	// } else {
-	// 	return nil, fmt.Errorf(errInvalidClusterStoreMissingPKNamespace)
-	// }
 
 	err = kube.Get(ctx, objectKey, credentialsSecret)
 	if err != nil {
@@ -120,8 +108,6 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 	providerchef.chefClient = client
 	return providerchef, nil
 }
-
-// TO be implemented
 
 // Close closes the client connection.
 func (providerchef *Providerchef) Close(ctx context.Context) error {
@@ -147,51 +133,7 @@ func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
 // GetAllSecrets Retrieves a map[string][]byte with the Databag names as key and the Databag's Items as secrets.
 // Retrives all DatabagItems of a Databag.
 func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1.ExternalSecretFind) (map[string][]byte, error) {
-	if utils.IsNil(providerchef.chefClient) {
-		return nil, fmt.Errorf(errUninitalizedChefProvider)
-	}
-	// respMap := map[string][]byte{} //map[databagname]items
-	// allDatabagsList, err := providerchef.chefClient.DataBags.List()
-	// if err != nil {
-	// 	return nil, fmt.Errorf(errNoDatabagsFound)
-	// }
-	databagName := ref.Name.DeepCopy().RegExp // find all databagItems of a databag. Name is databag name
-	databagItemsList, err := providerchef.chefClient.DataBags.ListItems(databagName)
-	if err != nil {
-		return nil, fmt.Errorf(errNoDatabagItemFound)
-	}
-	for databagItem := range *databagItemsList {
-		ditem, err := providerchef.chefClient.DataBags.GetItem(databagName, databagItem)
-		if err != nil {
-			return nil, fmt.Errorf(errNoDatabagItemContentFound)
-		}
-		// fmt.Printf("ditem: %+v\n", ditem)
-		v := reflect.ValueOf(ditem)
-		if v.Kind() == reflect.Map {
-			for _, key := range v.MapKeys() {
-				strct := v.MapIndex(key)
-				fmt.Println(key.Interface(), strct.Interface())
-				jsonByte, err := json.Marshal(strct.Interface())
-				if err != nil {
-					log.Error(err, "unable to convert to jsonByte")
-				}
-				jsonString := string(jsonByte)
-				fmt.Println(jsonString)
-			}
-		}
-
-		// secretsMap[databag] = []byte(fmt.Sprintf("%v", ditem))
-		// fmt.Println(idata.String())
-	}
-
-	/*
-		secretsMap := make(map[string][]byte)
-		list, err := providerchef.chefClient.DataBags.List()
-		if err != nil {
-			fmt.Println("Issue list databag:", err)
-		}
-	*/
-	return nil, fmt.Errorf("GetAllSecrets yet to implement")
+	return nil, fmt.Errorf("dataFrom.find not suppported")
 }
 
 // GetSecret returns a databagItem present in the databag. format example: databagName/databagItemName.
@@ -201,10 +143,13 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 	}
 
 	key := ref.Key
-
+	databagName := ""
+	databagItem := ""
 	nameSplitted := strings.Split(key, "/")
-	databagName := nameSplitted[0]
-	databagItem := nameSplitted[1]
+	if len(nameSplitted) > 1 {
+		databagName = nameSplitted[0]
+		databagItem = nameSplitted[1]
+	}
 
 	if len(databagName) != 0 && len(databagItem) != 0 {
 		return getSingleDatabagItem(providerchef, databagName, databagItem, ref.Property)
@@ -234,7 +179,7 @@ func getPropertyFromDatabagItem(jsonString, propertyName string) ([]byte, error)
 	result := gjson.Get(jsonString, propertyName)
 
 	if !result.Exists() {
-		return nil, fmt.Errorf(errNoDatabagItemPropertyFund)
+		return nil, fmt.Errorf(errNoDatabagItemPropertyFound)
 	}
 	return []byte(result.String()), nil
 }
@@ -258,51 +203,7 @@ func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.
 		}
 		getAllSecrets[dataItem] = dItem
 	}
-
-	// dataBag, dataItem := getObjType(ref)
-	// if dataBag != "" && dataItem != "" {
-	// 	ditem, err := providerchef.chefClient.DataBags.GetItem(dataBag, dataItem)
-	// 	if err != nil {
-	// 		//fmt.Println("Issue getting databag  item:", err)
-	// 		return nil, err
-	// 	}
-	// }
-
-	// switch objectType {
-	// case defaultObjType:
-	// 	data, err := a.GetSecret(ctx, ref)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	if ref.MetadataPolicy == esv1beta1.ExternalSecretMetadataPolicyFetch {
-	// 		tags, _ := a.getSecretTags(ref)
-	// 		return getSecretMapProperties(tags, ref.Key, ref.Property), nil
-	// 	}
-
-	// 	return getSecretMapMap(data)
-
-	// case objectTypeCert:
-	// 	return nil, fmt.Errorf(errDataFromCert)
-	// case objectTypeKey:
-	// 	return nil, fmt.Errorf(errDataFromKey)
-	// }
-	// return nil, fmt.Errorf(errUnknownObjectType, secretName)
 	return getAllSecrets, nil
-}
-
-func getObjType(ref v1beta1.ExternalSecretDataRemoteRef) (string, string) {
-	key := ref.Key
-	nameSplitted := strings.Split(key, "/")
-
-	databagName := ""
-	databagItem := ""
-	if len(nameSplitted) > 1 {
-		databagName = nameSplitted[0]
-		databagItem = nameSplitted[1]
-	}
-	log.Info("databagName:", databagName, "databagItem:", databagItem)
-	return databagName, databagItem
 }
 
 // ValidateStore checks if the provided store is valid.
@@ -354,24 +255,3 @@ func getChefProvider(store v1beta1.GenericStore) (*v1beta1.ChefProvider, error) 
 
 	return chefProvider, nil
 }
-
-/*
-type ChefClient interface {
-	// DataBagItem fetch single data bag item "item"
-	DataBagItem(bag string, item string) (chef.DataBagItem, error)
-​
-	// AllDataBagItems get all items in a data bag
-	AllDataBagItems(bag string) (map[string]map[string]interface{}, error)
-}
-​
-// DataBagItem fetch single data bag item "item"
-// Return the content as unmarshalled JSON
-func (c chefclient) DataBagItem(bag string, item string) (chef.DataBagItem, error) {
-	databagitem, err := c.chefClient.DataBags.GetItem(bag, item)
-	if err != nil {
-		//klog.Infof("Issue getting data bag %s item %s: %s", bag, item, err)
-		return nil, err
-	}
-	return databagitem, nil
-}
-*/
