@@ -119,11 +119,12 @@ func TestValidateStore(t *testing.T) {
 	for _, tc := range testCases {
 		err := pc.ValidateStore(tc.store)
 		if tc.err != nil && err != nil && err.Error() != tc.err.Error() {
-			t.Errorf("test failed! want %v, got %v", tc.err, err)
+			t.Errorf("test failed! want: %v, got: %v", tc.err, err)
 		} else if tc.err == nil && err != nil {
-			t.Errorf("want nil got err %v", err)
+			t.Errorf("want: nil got: err %v", err)
 		} else if tc.err != nil && err == nil {
-			t.Errorf("want err %v got nil", tc.err)
+			t.Errorf("want: err %v got: nil", tc.err)
 		}
 	}
+
 }
