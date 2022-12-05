@@ -58,14 +58,13 @@ const (
 	errServerURLNoEndSlash                   = "server URL does not end with slash(/)"
 )
 
-type ChefInterface interface {
-	GetItem(string, string) (chef.DataBagItem, error)
-	ListItems(string) (*chef.DataBagListResult, error)
+type DatabagFetcher interface {
+	GetItem(databagName string, databagItem string) (item chef.DataBagItem, err error)
+	ListItems(name string) (data *chef.DataBagListResult, err error)
 }
 
 type Providerchef struct {
-	//chefClient *chef.Client
-	ChefInterface chef.DataBagService
+	databagService DatabagFetcher
 }
 
 // https://github.com/external-secrets/external-secrets/issues/644
@@ -81,8 +80,6 @@ func init() {
 }
 
 func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.GenericStore, kube kclient.Client, namespace string) (v1beta1.SecretsClient, error) {
-	// handle validation of clustersecretstore, serstore, externalserstore
-
 	chefProvider, err := getChefProvider(store)
 	if err != nil {
 		return nil, fmt.Errorf(errChefProvider, err)
@@ -111,7 +108,8 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 	if err != nil {
 		return nil, fmt.Errorf(errChefClient, err)
 	}
-	providerchef.ChefInterface = *client.DataBags
+	//providerchef.Client = *client.DataBags
+	providerchef.databagService = client.DataBags
 	return providerchef, nil
 }
 
@@ -144,7 +142,7 @@ func (providerchef *Providerchef) GetAllSecrets(ctx context.Context, ref v1beta1
 
 // GetSecret returns a databagItem present in the databag. format example: databagName/databagItemName.
 func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.ExternalSecretDataRemoteRef) ([]byte, error) {
-	if utils.IsNil(providerchef.ChefInterface) {
+	if utils.IsNil(providerchef.databagService) {
 		return nil, fmt.Errorf(errUninitalizedChefProvider)
 	}
 	fmt.Println(ref.Key, ref.Property)
@@ -166,7 +164,7 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 }
 
 func getSingleDatabagItem(providerchef *Providerchef, dataBagName, databagItemName, propertyName string) ([]byte, error) {
-	ditem, err := providerchef.ChefInterface.GetItem(dataBagName, databagItemName)
+	ditem, err := providerchef.databagService.GetItem(dataBagName, databagItemName)
 	if err != nil {
 		return nil, fmt.Errorf(errNoDatabagItemFound)
 	}
@@ -194,13 +192,13 @@ func getPropertyFromDatabagItem(jsonString, propertyName string) ([]byte, error)
 
 // GetSecretMap returns multiple k/v pairs from the provider, for dataFrom.extract.
 func (providerchef *Providerchef) GetSecretMap(ctx context.Context, ref v1beta1.ExternalSecretDataRemoteRef) (map[string][]byte, error) {
-	if utils.IsNil(providerchef.ChefInterface) {
+	if utils.IsNil(providerchef.databagService) {
 		return nil, fmt.Errorf(errUninitalizedChefProvider)
 	}
 	databagName := ref.Key
 	getAllSecrets := make(map[string][]byte)
-	log.Info("fetching all items from databag:", databagName)
-	dataItems, err := providerchef.ChefInterface.ListItems(databagName)
+	log.Info("fetching all items from databag:", databagName, "", "", "")
+	dataItems, err := providerchef.databagService.ListItems(databagName)
 	if err != nil {
 		return nil, fmt.Errorf(errNoDatabagItemFound)
 	}

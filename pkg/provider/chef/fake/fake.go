@@ -19,57 +19,36 @@ import (
 	"github.com/go-chef/chef"
 )
 
-type DataBagService struct {
-	ChefMockClient
-	MockContent   map[string]interface{}
-	MockListItems chef.DataBagListResult
-}
-
 type ChefMockClient struct {
-	Client chef.Client
+	getItem   func(databagName string, databagItem string) (item chef.DataBagItem, err error)
+	listItems func(name string) (data *chef.DataBagListResult, err error)
 }
 
-func NewMockClient() *ChefMockClient {
-	return &ChefMockClient{}
+func (mc *ChefMockClient) GetItem(databagName string, databagItem string) (item chef.DataBagItem, err error) {
+	return mc.getItem(databagName, databagItem)
 }
 
-// GetItems returns []onepassword.Item, you must preload.
-func (mockClient *ChefMockClient) ListItems(databagName string) (chef.DataBagListResult, error) {
-	// if len(mockClient.MockListItems) > 1 {
-	// 	return mockClient.MockListItems, nil
-	// }
-	ret := make(map[string]string)
-	ret["item-01"] = "https://chef.com/organizations/dev/data/" + databagName + "/item-01"
-	return ret, nil
-	//return chef.DataBagListResult{}, errors.New("status 404: " + databagName + " not found")
+func (mc *ChefMockClient) ListItems(name string) (data *chef.DataBagListResult, err error) {
+	return mc.listItems(name)
 }
 
-// GetItem returns a *onepassword.Item, you must preload.
-func (mockClient *ChefMockClient) GetItem(dataBagName string, databagItemName string) (chef.DataBagItem, error) {
-	// if len(mockClient.MockListItems) > 1 {
-	// 	return mockClient.MockContent, nil
-	// }
-	ret := make(map[string]interface{})
-	jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, databagItemName)
-	ret[databagItemName] = jsonstring
-	return ret, nil
-	//return nil, errors.New("status 404: " + databagItemName + " not found " + "in " + dataBagName)
+func (mc *ChefMockClient) WithItem(dataBagName string, databagItemName string, err error) {
+	if mc != nil {
+		mc.getItem = func(dataBagName, databagItemName string) (item chef.DataBagItem, err error) {
+			ret := make(map[string]interface{})
+			jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, dataBagName+databagItemName)
+			ret[databagItemName] = jsonstring
+			return ret, nil
+		}
+	}
 }
 
-// AddPredictableVault adds vaults to the mock client in a predictable way.
-// func (mockClient *ChefMockClient) AddPredictableListItems(databagName string) *ChefMockClient {
-// 	mockClient.MockListItems["item-01"] = "https://chef.com/organizations/dev/data/" + databagName + "/item-01"
-// 	// mockClient.MockListItems["item-02"] = "https://chef.com/organizations/dev/data/" + databagName + "/item-02"
-// 	return mockClient
-// }
-
-// AddPredictableVault adds vaults to the mock client in a predictable way.
-// func (mockClient *ChefMockClient) AddPredictableGetItem() *ChefMockClient {
-// 	for item, _ := range mockClient.MockListItems {
-// 		if item == "item-01" {
-// 			jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, item)
-// 			mockClient.MockContent[item] = jsonstring
-// 		}
-// 	}
-// 	return mockClient
-// }
+func (mc *ChefMockClient) WithListItems(databagName string, err error) {
+	if mc != nil {
+		mc.listItems = func(databagName string) (data *chef.DataBagListResult, err error) {
+			ret := make(chef.DataBagListResult)
+			ret["item01"] = "https://chef.com/organizations/dev/data/" + databagName + "/item01"
+			return &ret, nil
+		}
+	}
+}

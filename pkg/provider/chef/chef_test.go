@@ -15,11 +15,15 @@ limitations under the License.
 package chef
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	v1 "github.com/external-secrets/external-secrets/apis/meta/v1"
+	fake "github.com/external-secrets/external-secrets/pkg/provider/chef/fake"
+	"github.com/external-secrets/external-secrets/pkg/utils"
+	"github.com/go-chef/chef"
 )
 
 const (
@@ -30,6 +34,73 @@ const (
 	authKey        = "chef-demo-auth-key"
 	authNamespace  = "chef-demo-auth-namespace"
 )
+
+type chefTestCase struct {
+	mockClient      *fake.ChefMockClient
+	databagName     string
+	databagItemName string
+	ref             *esv1beta1.ExternalSecretDataRemoteRef
+	apiErr          error
+	expectError     string
+	expectedData    map[string][]byte
+	expectedByte    []byte
+}
+
+func makeValidChefTestCase() *chefTestCase {
+	smtc := chefTestCase{
+		mockClient:      &fake.ChefMockClient{},
+		ref:             makeValidRef(),
+		databagName:     "databag01",
+		databagItemName: "item01",
+		apiErr:          nil,
+		expectError:     "",
+		expectedData:    map[string][]byte{"item01": []byte(`"https://chef.com/organizations/dev/data/databag01/item01"`)},
+		expectedByte:    []byte(`{"item01":"{\"id\":\"databag01item01\",\"some_key\":\"fe7f29ede349519a1\",\"some_password\":\"dolphin_123zc\",\"some_username\":\"testuser\"}"}`),
+	}
+
+	smtc.mockClient.WithListItems(smtc.databagName, smtc.apiErr)
+	smtc.mockClient.WithItem(smtc.databagName, smtc.databagItemName, smtc.apiErr)
+	return &smtc
+}
+
+func makeValidRef() *esv1beta1.ExternalSecretDataRemoteRef {
+	return &esv1beta1.ExternalSecretDataRemoteRef{
+		Key: "databag01/item01",
+	}
+}
+
+func makeValidSecretManagerTestCaseCustom(tweaks ...func(smtc *chefTestCase)) *chefTestCase {
+	smtc := makeValidChefTestCase()
+	for _, fn := range tweaks {
+		fn(smtc)
+	}
+	smtc.mockClient.WithListItems(smtc.databagName, smtc.apiErr)
+	smtc.mockClient.WithItem(smtc.databagName, smtc.databagItemName, smtc.apiErr)
+
+	return smtc
+}
+
+func TestChefGetSecret(t *testing.T) {
+
+	successCases := []*chefTestCase{
+		makeValidChefTestCase(),
+		//makeValidSecretManagerTestCaseCustom(fetchDottedSecretJSONTag),
+	}
+
+	sm := Providerchef{
+		databagService: &chef.DataBagService{},
+	}
+	for k, v := range successCases {
+		sm.databagService = v.mockClient
+		out, err := sm.GetSecret(context.Background(), *v.ref)
+		if !utils.ErrorContains(err, v.expectError) {
+			t.Errorf("[%d] unexpected error: %s, expected: '%s'", k, err.Error(), v.expectError)
+		}
+		if string(out) != string(v.expectedByte) {
+			t.Errorf("[%d] unexpected secret: expected %s, got %s", k, v.expectedByte, string(out))
+		}
+	}
+}
 
 type ValidateStoreTestCase struct {
 	store *esv1beta1.SecretStore
