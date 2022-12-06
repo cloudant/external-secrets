@@ -14,6 +14,7 @@ limitations under the License.
 package fake
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-chef/chef"
@@ -36,8 +37,14 @@ func (mc *ChefMockClient) WithItem(dataBagName string, databagItemName string, e
 	if mc != nil {
 		mc.getItem = func(dataBagName, databagItemName string) (item chef.DataBagItem, err error) {
 			ret := make(map[string]interface{})
-			jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, dataBagName+databagItemName)
-			ret[databagItemName] = jsonstring
+			if dataBagName == "databag01" && databagItemName == "item01" {
+				jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, dataBagName+"-"+databagItemName)
+				ret[databagItemName] = jsonstring
+			} else {
+				str := "https://chef.com/organizations/dev/data/" + dataBagName + "/" + databagItemName + ": 404"
+				return nil, errors.New(str)
+			}
+
 			return ret, nil
 		}
 	}
@@ -47,7 +54,8 @@ func (mc *ChefMockClient) WithListItems(databagName string, err error) {
 	if mc != nil {
 		mc.listItems = func(databagName string) (data *chef.DataBagListResult, err error) {
 			ret := make(chef.DataBagListResult)
-			ret["item01"] = "https://chef.com/organizations/dev/data/" + databagName + "/item01"
+			jsonstring := fmt.Sprintf("https://chef.com/organizations/dev/data/%s/item01", databagName)
+			ret["item01"] = jsonstring
 			return &ret, nil
 		}
 	}
