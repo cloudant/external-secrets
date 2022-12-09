@@ -54,6 +54,13 @@ type chefTestCase struct {
 	expectedByte    []byte
 }
 
+type ValidateStoreTestCase struct {
+	store *esv1beta1.SecretStore
+	err   error
+}
+
+type storeModifier func(*esv1beta1.SecretStore) *esv1beta1.SecretStore
+
 func makeValidChefTestCase() *chefTestCase {
 	smtc := chefTestCase{
 		mockClient:      &fake.ChefMockClient{},
@@ -169,12 +176,12 @@ func TestChefGetSecretMap(t *testing.T) {
 		makeValidChefTestCaseCustom(invalidDatabagName),
 	}
 
-	sm := Providerchef{
+	pc := Providerchef{
 		databagService: &chef.DataBagService{},
 	}
 	for k, v := range successCases {
-		sm.databagService = v.mockClient
-		out, err := sm.GetSecretMap(context.Background(), *v.ref)
+		pc.databagService = v.mockClient
+		out, err := pc.GetSecretMap(context.Background(), *v.ref)
 		if err != nil && utils.ErrorContains(err, v.expectError) {
 			t.Errorf("test failed! want: %v, got: %v", v.apiErr, err)
 		}
@@ -183,13 +190,6 @@ func TestChefGetSecretMap(t *testing.T) {
 		}
 	}
 }
-
-type ValidateStoreTestCase struct {
-	store *esv1beta1.SecretStore
-	err   error
-}
-
-type storeModifier func(*esv1beta1.SecretStore) *esv1beta1.SecretStore
 
 func makeSecretStore(name, baseURL string, auth *esv1beta1.ChefAuth, fn ...storeModifier) *esv1beta1.SecretStore {
 	store := &esv1beta1.SecretStore{
@@ -222,7 +222,6 @@ func makeAuth(name, namespace, key string) *esv1beta1.ChefAuth {
 	}
 }
 
-// minimal TestCases written, more to be added.
 func TestValidateStore(t *testing.T) {
 	testCases := []ValidateStoreTestCase{
 		{
@@ -282,7 +281,7 @@ func TestValidateStore(t *testing.T) {
 
 }
 
-func TestValidRetryInput(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	store := &esv1beta1.SecretStore{
 		Spec: esv1beta1.SecretStoreSpec{
 			Provider: &esv1beta1.SecretStoreProvider{
@@ -310,7 +309,7 @@ func TestValidRetryInput(t *testing.T) {
 	pc := Providerchef{databagService: &fake.ChefMockClient{}}
 	_, err := pc.NewClient(ctx, store, kube, "default")
 	if !ErrorContains(err, expected) {
-		t.Errorf("CheckValidRetryInput unexpected error: %s, expected: '%s'", err.Error(), expected)
+		t.Errorf("CheckNewClient unexpected error: %s, expected: '%s'", err.Error(), expected)
 	}
 }
 
