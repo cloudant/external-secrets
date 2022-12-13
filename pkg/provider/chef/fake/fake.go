@@ -25,7 +25,7 @@ type ChefMockClient struct {
 	listItems func(name string) (data *chef.DataBagListResult, err error)
 }
 
-func (mc *ChefMockClient) GetItem(databagName string, databagItem string) (item chef.DataBagItem, err error) {
+func (mc *ChefMockClient) GetItem(databagName, databagItem string) (item chef.DataBagItem, err error) {
 	return mc.getItem(databagName, databagItem)
 }
 
@@ -33,7 +33,7 @@ func (mc *ChefMockClient) ListItems(name string) (data *chef.DataBagListResult, 
 	return mc.listItems(name)
 }
 
-func (mc *ChefMockClient) WithItem(dataBagName string, databagItemName string, err error) {
+func (mc *ChefMockClient) WithItem(dataBagName, databagItemName string, err error) {
 	if mc != nil {
 		mc.getItem = func(dataBagName, databagItemName string) (item chef.DataBagItem, err error) {
 			ret := make(map[string]interface{})

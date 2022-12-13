@@ -21,25 +21,27 @@ import (
 	"strings"
 	"testing"
 
-	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	v1 "github.com/external-secrets/external-secrets/apis/meta/v1"
-	fake "github.com/external-secrets/external-secrets/pkg/provider/chef/fake"
-	"github.com/external-secrets/external-secrets/pkg/utils"
 	"github.com/go-chef/chef"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	v1 "github.com/external-secrets/external-secrets/apis/meta/v1"
+	fake "github.com/external-secrets/external-secrets/pkg/provider/chef/fake"
+	"github.com/external-secrets/external-secrets/pkg/utils"
 )
 
 const (
-	name           = "chef-demo-user"
-	baseURL        = "https://chef.cloudant.com/organizations/myorg/"
-	baseInvalidURL = "invalid base URL"
-	authName       = "chef-demo-auth-name"
-	authKey        = "chef-demo-auth-key"
-	authNamespace  = "chef-demo-auth-namespace"
-	kind           = "SecretStore"
-	apiversion     = "external-secrets.io/v1beta1"
+	name                     = "chef-demo-user"
+	baseURL                  = "https://chef.cloudant.com/organizations/myorg/"
+	noEndSlashInvalidBaseURL = "no end slash invalid base URL"
+	baseInvalidURL           = "invalid base URL/"
+	authName                 = "chef-demo-auth-name"
+	authKey                  = "chef-demo-auth-key"
+	authNamespace            = "chef-demo-auth-namespace"
+	kind                     = "SecretStore"
+	apiversion               = "external-secrets.io/v1beta1"
 )
 
 type chefTestCase struct {
@@ -238,7 +240,11 @@ func TestValidateStore(t *testing.T) {
 		},
 		{
 			store: makeSecretStore(name, baseInvalidURL, makeAuth(authName, authNamespace, authKey)),
-			err:   fmt.Errorf("received invalid Chef SecretStore resource: unable to parse URL: parse \"invalid base URL\": invalid URI for request"),
+			err:   fmt.Errorf("received invalid Chef SecretStore resource: unable to parse URL: parse \"invalid base URL/\": invalid URI for request"),
+		},
+		{
+			store: makeSecretStore(name, noEndSlashInvalidBaseURL, makeAuth(authName, authNamespace, authKey)),
+			err:   fmt.Errorf("received invalid Chef SecretStore resource: server URL does not end with slash(/)"),
 		},
 		{
 			store: makeSecretStore(name, baseURL, makeAuth(authName, authNamespace, "")),
@@ -278,7 +284,6 @@ func TestValidateStore(t *testing.T) {
 			t.Errorf("want: err %v got: nil", tc.err)
 		}
 	}
-
 }
 
 func TestNewClient(t *testing.T) {

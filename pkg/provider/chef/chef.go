@@ -108,7 +108,7 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 	if err != nil {
 		return nil, fmt.Errorf(errChefClient, err)
 	}
-	//providerchef.Client = *client.DataBags
+
 	providerchef.databagService = client.DataBags
 	return providerchef, nil
 }
@@ -121,12 +121,6 @@ func (providerchef *Providerchef) Close(ctx context.Context) error {
 // Validate checks if the client is configured correctly
 // to be able to retrieve secrets from the provider.
 func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
-	// serverURL := providerchef.chefClient.BaseURL.String()
-	// endsWithSlash := strings.HasSuffix(serverURL, "/")
-	// if !endsWithSlash {
-	// 	return v1beta1.ValidationResultError, fmt.Errorf(errServerURLNoEndSlash)
-	// }
-
 	// _, err := providerchef.chefClient.Users.Get(providerchef.chefClient.Auth.ClientName)
 	// if err != nil {
 	// 	return v1beta1.ValidationResultError, fmt.Errorf(errStoreValidateFailed)
@@ -248,6 +242,9 @@ func getChefProvider(store v1beta1.GenericStore) (*v1beta1.ChefProvider, error) 
 	}
 	if chefProvider.ServerURL == "" {
 		return chefProvider, fmt.Errorf(errMissingBaseURL)
+	}
+	if !strings.HasSuffix(chefProvider.ServerURL, "/") {
+		return chefProvider, fmt.Errorf(errServerURLNoEndSlash)
 	}
 	// check valid URL
 	if _, err := url.ParseRequestURI(chefProvider.ServerURL); err != nil {
