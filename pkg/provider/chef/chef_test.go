@@ -135,12 +135,21 @@ func TestChefGetSecret(t *testing.T) {
 		smtc.ref = makeValidRef(smtc.databagName, smtc.databagItemName, "findProperty")
 	}
 
+	withProperty := func(smtc *chefTestCase) {
+		smtc.expectedByte = []byte("foundProperty")
+		smtc.apiErr = nil
+		smtc.databagName = "databag03"
+		smtc.databagItemName = "item03"
+		smtc.ref = makeValidRef(smtc.databagName, smtc.databagItemName, "findProperty")
+	}
+
 	successCases := []*chefTestCase{
 		makeValidChefTestCase(),
 		makeValidChefTestCaseCustom(nilClient),
 		makeValidChefTestCaseCustom(invalidDatabagName),
 		makeValidChefTestCaseCustom(invalidDatabagItemName),
 		makeValidChefTestCaseCustom(noProperty),
+		makeValidChefTestCaseCustom(withProperty),
 	}
 
 	sm := Providerchef{

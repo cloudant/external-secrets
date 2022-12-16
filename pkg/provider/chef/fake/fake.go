@@ -55,6 +55,11 @@ func (mc *ChefMockClient) WithItem(dataBagName, databagItemName string, err erro
 			if dataBagName == "databag01" && databagItemName == "item01" {
 				jsonstring := fmt.Sprintf(`{"id":"%s","some_key":"fe7f29ede349519a1","some_password":"dolphin_123zc","some_username":"testuser"}`, dataBagName+"-"+databagItemName)
 				ret[databagItemName] = jsonstring
+			} else if dataBagName == "databag03" && databagItemName == "item03" {
+				jsonMap := make(map[string]string)
+				jsonMap["id"] = "item03"
+				jsonMap["findProperty"] = "foundProperty"
+				return jsonMap, nil
 			} else {
 				str := "https://chef.com/organizations/dev/data/" + dataBagName + "/" + databagItemName + ": 404"
 				return nil, errors.New(str)
