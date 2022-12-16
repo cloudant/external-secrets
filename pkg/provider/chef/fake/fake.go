@@ -20,9 +20,14 @@ import (
 	"github.com/go-chef/chef"
 )
 
+const (
+	CORRECTUSER = "correctUser"
+)
+
 type ChefMockClient struct {
 	getItem   func(databagName string, databagItem string) (item chef.DataBagItem, err error)
 	listItems func(name string) (data *chef.DataBagListResult, err error)
+	getUser   func(name string) (user chef.User, err error)
 }
 
 func (mc *ChefMockClient) GetItem(databagName, databagItem string) (item chef.DataBagItem, err error) {
@@ -31,6 +36,16 @@ func (mc *ChefMockClient) GetItem(databagName, databagItem string) (item chef.Da
 
 func (mc *ChefMockClient) ListItems(name string) (data *chef.DataBagListResult, err error) {
 	return mc.listItems(name)
+}
+
+func (mc *ChefMockClient) Get(name string) (user chef.User, err error) {
+	if name == CORRECTUSER {
+		return chef.User{
+			UserName: name,
+		}, nil
+	} else {
+		return chef.User{}, errors.New("message")
+	}
 }
 
 func (mc *ChefMockClient) WithItem(dataBagName, databagItemName string, err error) {
@@ -57,6 +72,16 @@ func (mc *ChefMockClient) WithListItems(databagName string, err error) {
 			jsonstring := fmt.Sprintf("https://chef.com/organizations/dev/data/%s/item01", databagName)
 			ret["item01"] = jsonstring
 			return &ret, nil
+		}
+	}
+}
+
+func (mc *ChefMockClient) WithUser(userName string, err error) {
+	if mc != nil {
+		mc.getUser = func(name string) (user chef.User, err error) {
+			return chef.User{
+				UserName: name,
+			}, nil
 		}
 	}
 }

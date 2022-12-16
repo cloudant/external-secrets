@@ -327,3 +327,15 @@ func ErrorContains(out error, want string) bool {
 	}
 	return strings.Contains(out.Error(), want)
 }
+
+func TestValidate(t *testing.T) {
+	pc := Providerchef{}
+	var mockClient *fake.ChefMockClient
+	pc.userService = mockClient
+	pc.clientName = "correctUser"
+	_, err := pc.Validate()
+	t.Log("Error: ", err)
+	pc.clientName = "wrongUser"
+	_, err = pc.Validate()
+	t.Log("Error: ", err)
+}

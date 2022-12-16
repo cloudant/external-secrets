@@ -63,8 +63,14 @@ type DatabagFetcher interface {
 	ListItems(name string) (data *chef.DataBagListResult, err error)
 }
 
+type UserInterface interface {
+	Get(name string) (user chef.User, err error)
+}
+
 type Providerchef struct {
+	clientName     string
 	databagService DatabagFetcher
+	userService    UserInterface
 }
 
 // https://github.com/external-secrets/external-secrets/issues/644
@@ -109,7 +115,9 @@ func (providerchef *Providerchef) NewClient(ctx context.Context, store v1beta1.G
 		return nil, fmt.Errorf(errChefClient, err)
 	}
 
+	providerchef.clientName = chefProvider.UserName
 	providerchef.databagService = client.DataBags
+	providerchef.userService = client.Users
 	return providerchef, nil
 }
 
@@ -121,10 +129,10 @@ func (providerchef *Providerchef) Close(ctx context.Context) error {
 // Validate checks if the client is configured correctly
 // to be able to retrieve secrets from the provider.
 func (providerchef *Providerchef) Validate() (v1beta1.ValidationResult, error) {
-	// _, err := providerchef.chefClient.Users.Get(providerchef.chefClient.Auth.ClientName)
-	// if err != nil {
-	// 	return v1beta1.ValidationResultError, fmt.Errorf(errStoreValidateFailed)
-	// }
+	_, err := providerchef.userService.Get(providerchef.clientName)
+	if err != nil {
+		return v1beta1.ValidationResultError, fmt.Errorf(errStoreValidateFailed)
+	}
 	return v1beta1.ValidationResultReady, nil
 }
 
