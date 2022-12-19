@@ -16,6 +16,7 @@ package fake
 import (
 	"errors"
 	"fmt"
+	"math"
 
 	"github.com/go-chef/chef"
 )
@@ -60,11 +61,12 @@ func (mc *ChefMockClient) WithItem(dataBagName, databagItemName string, err erro
 				jsonMap["id"] = "item03"
 				jsonMap["findProperty"] = "foundProperty"
 				return jsonMap, nil
+			} else if dataBagName == "databag01" && databagItemName == "item03" {
+				return math.Inf(1), nil
 			} else {
 				str := "https://chef.com/organizations/dev/data/" + dataBagName + "/" + databagItemName + ": 404"
 				return nil, errors.New(str)
 			}
-
 			return ret, nil
 		}
 	}

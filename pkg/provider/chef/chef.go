@@ -147,7 +147,6 @@ func (providerchef *Providerchef) GetSecret(ctx context.Context, ref v1beta1.Ext
 	if utils.IsNil(providerchef.databagService) {
 		return nil, fmt.Errorf(errUninitalizedChefProvider)
 	}
-	fmt.Println(ref.Key, ref.Property)
 
 	key := ref.Key
 	databagName := ""

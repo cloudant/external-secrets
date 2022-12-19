@@ -81,6 +81,24 @@ func makeValidChefTestCase() *chefTestCase {
 	return &smtc
 }
 
+func makeInValidChefTestCase() *chefTestCase {
+	smtc := chefTestCase{
+		mockClient:      &fake.ChefMockClient{},
+		databagName:     "databag01",
+		databagItemName: "item03",
+		property:        "",
+		apiErr:          errors.New("unable to convert databagItem into JSON"),
+		expectError:     "unable to convert databagItem into JSON",
+		expectedData:    nil,
+		expectedByte:    nil,
+	}
+
+	smtc.ref = makeValidRef(smtc.databagName, smtc.databagItemName, smtc.property)
+	smtc.mockClient.WithListItems(smtc.databagName, smtc.apiErr)
+	smtc.mockClient.WithItem(smtc.databagName, smtc.databagItemName, smtc.apiErr)
+	return &smtc
+}
+
 func makeValidRef(databag, dataitem, property string) *esv1beta1.ExternalSecretDataRemoteRef {
 	return &esv1beta1.ExternalSecretDataRemoteRef{
 		Key:      databag + "/" + dataitem,
@@ -107,19 +125,20 @@ func TestChefGetSecret(t *testing.T) {
 		smtc.mockClient = nil
 		smtc.expectedByte = nil
 		smtc.apiErr = errors.New("provider chef is not initialized")
+		smtc.expectError = "provider chef is not initialized"
 	}
 
 	invalidDatabagName := func(smtc *chefTestCase) {
-		smtc.expectedByte = nil
-		smtc.apiErr = errors.New("could not get secret data from provider")
+		smtc.apiErr = errors.New("invalid format. Expected value 'databagName/databagItemName")
 		smtc.databagName = "databag02"
 		smtc.expectedByte = nil
 		smtc.ref = makeinValidRef()
+		smtc.expectError = "invalid format. Expected value 'databagName/databagItemName"
 	}
 
 	invalidDatabagItemName := func(smtc *chefTestCase) {
-		smtc.expectedByte = nil
 		smtc.apiErr = errors.New("no Databag Item found")
+		smtc.expectError = "no Databag Item found"
 		smtc.databagName = "databag01"
 		smtc.databagItemName = "item02"
 		smtc.expectedByte = nil
@@ -127,8 +146,8 @@ func TestChefGetSecret(t *testing.T) {
 	}
 
 	noProperty := func(smtc *chefTestCase) {
-		smtc.expectedByte = nil
-		smtc.apiErr = errors.New("no Databag Item found")
+		smtc.apiErr = errors.New("property is not found in Databag item")
+		smtc.expectError = "property is not found in Databag item"
 		smtc.databagName = "databag01"
 		smtc.databagItemName = "item01"
 		smtc.expectedByte = nil
@@ -150,6 +169,7 @@ func TestChefGetSecret(t *testing.T) {
 		makeValidChefTestCaseCustom(invalidDatabagItemName),
 		makeValidChefTestCaseCustom(noProperty),
 		makeValidChefTestCaseCustom(withProperty),
+		makeInValidChefTestCase(),
 	}
 
 	sm := Providerchef{
@@ -158,8 +178,8 @@ func TestChefGetSecret(t *testing.T) {
 	for k, v := range successCases {
 		sm.databagService = v.mockClient
 		out, err := sm.GetSecret(context.Background(), *v.ref)
-		if err != nil && utils.ErrorContains(err, v.expectError) {
-			t.Errorf("test failed! want: %v, got: %v", v.apiErr, err)
+		if err != nil && !utils.ErrorContains(err, v.expectError) {
+			t.Errorf("test failed! want: %v, got: %v", v.expectError, err)
 		}
 		if string(out) != string(v.expectedByte) {
 			t.Errorf("[%d] unexpected secret: expected %s, got %s", k, v.expectedByte, string(out))
