@@ -4,7 +4,7 @@ metadata:
   name: vivid-external-secrets # name of ExternalSecret
   namespace: vivid # namespace inside which the ExternalSecret will be created
   annotations:
-    company/contacts: user.a@company.com
+    company/contacts: user.a@company.com, user.b@company.com
     company/team: vivid-dev
   labels:
     app.kubernetes.io/name: external-secrets
