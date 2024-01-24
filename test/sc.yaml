@@ -7,7 +7,7 @@ spec:
   provider:
     chef:
       username: user # Chef User name
-      serverurl: https://manage.chef.io/organizations/user/ # Chef server URL ...
+      serverurl: https://manage.chef.io/organizations/user/ # Chef server URL
       auth:
         secretRef:
           privateKeySecretRef:
