@@ -6,8 +6,8 @@ metadata:
 spec:
   provider:
     chef:
-      username: souravpatnaik # Chef User name
-      serverurl: https://manage.chef.io/organizations/testinfrasourav/ # Chef server URL 
+      username: user # Chef User name
+      serverurl: https://manage.chef.io/organizations/user/ # Chef server URL
       auth:
         secretRef:
           privateKeySecretRef:
