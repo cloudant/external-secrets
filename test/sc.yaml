@@ -2,7 +2,7 @@ apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
   name: vivid-secretstore # name of SecretStore
-  namespace: vivid # must required for kind: SecretStore
+  namespace: vivid-ns # must required for kind: SecretStore
 spec:
   provider:
     chef:
