@@ -14,3 +14,4 @@ spec:
             name: chef-user-secret # name of Kubernetes Secret resource containing the Chef User's private key
             key: user-private-key # name of the key inside Secret resource
             namespace: vivid # the ns where the k8s secret resource containing Chef User's private key resides
+
