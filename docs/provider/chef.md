@@ -57,7 +57,7 @@ You can follow the below example to create a `SecretStore` resource.
 apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
-  name: vivid-secretstore # name of SecretStore
+  name: vivid-secretstore # Name of SecretStore
   namespace: vivid # must be required for kind: SecretStore
 spec:
   provider:
