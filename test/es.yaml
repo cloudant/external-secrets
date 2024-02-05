@@ -1,7 +1,7 @@
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: vivid-external-secrets # name of ExternalSecret
+  name: vivid-external-secrets # Name of ExternalSecret
   namespace: vivid # namespace inside which the ExternalSecret will be created
   annotations:
     company/contacts: user.a@company.com, user.b@company.com
