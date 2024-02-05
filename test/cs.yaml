@@ -1,0 +1,17 @@
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: vivid-secretstore # name of SecretStore
+  namespace: vivid-ns # must required for kind: SecretStore
+spec:
+  provider:
+    chef:
+      username: user # Chef User name
+      serverUrl: https://manage.chef.io/organizations/user/ # Chef server URL to connect
+      auth:
+        secretRef:
+          privateKeySecretRef:
+            name: chef-user-secret # name of Kubernetes Secret resource containing the Chef User's private key
+            key: user-private-key # name of the key inside Secret resource
+            namespace: vivid # the ns where the k8s secret resource containing Chef User's private key resides
+
