@@ -109,5 +109,3 @@ spec:
     creationPolicy: Owner
 
 ```
-
-follow : [this file](https://github.com/external-secrets/external-secrets/blob/main/apis/externalsecrets/v1beta1/secretstore_chef_types.go) for more info
