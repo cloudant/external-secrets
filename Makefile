@@ -342,3 +342,35 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 tilt: $(TILT) ## Download tilt locally if necessary. Architecture is locked at x86_64.
 $(TILT): $(LOCALBIN)
 	test -s $(LOCALBIN)/tilt || curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v$(TILT_VERSION)/tilt.$(TILT_VERSION).$(detected_OS).$(arch).tar.gz | tar -xz -C $(LOCALBIN) tilt
+
+
+.PHONY: update-secrets
+
+update-secrets:
+	@echo "🚀 Starting detect-secrets workflow..."
+
+	# 🧼 Clean any existing virtual environment
+	@echo "🧹 Cleaning old virtual environment (if any)..."
+	@rm -rf .venv-ds
+
+	# 🛠️  Set up a new virtual environment
+	@echo "🐍 Creating fresh virtual environment at .venv-ds..."
+	@python3 -m venv .venv-ds
+
+	# 📦 Upgrade pip silently
+	@echo "📦 Upgrading pip..."
+	@.venv-ds/bin/pip install --upgrade pip > /dev/null
+
+	# 🔍 Install latest detect-secrets
+	@echo "🔐 Installing detect-secrets..."
+	@.venv-ds/bin/pip install git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets > /dev/null
+
+	# 📊 Scan and update the baseline
+	@echo "🔎 Scanning for secrets and updating .secrets.baseline..."
+	@.venv-ds/bin/detect-secrets scan --update .secrets.baseline --suppress-unscannable-file-warnings
+
+	# 🧽 Cleanup the virtual environment
+	@echo "🧼 Removing virtual environment..."
+	@rm -rf .venv-ds
+
+	@echo "✅ Done! .secrets.baseline is updated."
